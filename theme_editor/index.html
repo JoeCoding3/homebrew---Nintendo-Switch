@@ -1,0 +1,159 @@
+<!doctype html>
+<title>hbmenu Theme Editor</title>
+<style>
+    * {
+        outline: none;
+        user-select: none;
+    }
+    body, ::selection {
+        background-color: black;
+        color: lightgray;
+    }
+
+    div {
+        display: inline-block;
+        border: 1px solid lightgray;
+        padding: 5px;
+    }
+    div:not(.shown) {
+        display: none;
+    }
+
+    button, input {
+        background-color: lightgray;
+        border-radius: 5px;
+    }
+    button {
+        cursor: pointer;
+    }
+</style>
+
+<div class="shown" id="mainMenuDiv">
+    <center>
+        <b>Theme .cfg editor</b>
+        <br>(Required fields have "*")
+    </center>
+
+    <br>
+    <center>
+        <button class="nextBtn" id="createThemeBtn">Create theme</button>
+        <button class="nextBtn" id="openThemeBtn">Open theme</button>
+    </center>
+</div>
+<div id="themeInfoDiv">
+    <center><button class="backBtn">Back</button></center>
+    <center><b>Theme info</b></center><br>
+
+    *Name: <input id="infoNameInp" placeholder="Custom Theme"><br>
+    *Author: <input id="infoAuthorInp" placeholder="A Person"><br>
+    *Version: <input id="infoVersionInp" placeholder="1.0.0"><br>
+
+    <br><center><button class="nextBtn">Next</button></center>
+</div>
+<div id="lightModeDiv">
+    <center><button class="backBtn">Back</button></center>
+    <center><b>Light mode</b></center><br>
+
+    Logo color: <input id="lightLogoColInp" placeholder="255,0,0,255"><br>
+    Text color: <input id="lightTextColInp" placeholder="255,0,0,255"><br>
+    Background color: <input id="lightBgColInp" placeholder="255,0,0,255"><br>
+    <br>
+    Front wave color: <input id="lightFrontWaveColInp" placeholder="255,0,0,255"><br>
+    Middle wave color: <input id="lightMiddleWaveColInp" placeholder="255,0,0,255"><br>
+    Back wave color: <input id="lightBackWaveColInp" placeholder="255,0,0,255"><br>
+    <br>
+    Selection color #1: <input id="lightSelectCol1Inp" placeholder="255,0,0,255"><br>
+    Selection color #2: <input id="lightSelectCol2Inp" placeholder="255,0,0,255"><br>
+    <br>
+    App/icon background color: <input id="lightAppIconBgColInp" placeholder="255,0,0,255"><br>
+    App/icon text color: <input id="lightAppIconTextColInp" placeholder="255,0,0,255"><br>
+    <br>
+    Blend wave colors?: <input id="lightBlendWavesBoolInp" placeholder="0"><br>
+    <br>
+    Separator color: <input id="lightSeparatorColInp" placeholder="255,0,0,255"><br>
+    Progress bar color: <input id="lightProgressBarColInp" placeholder="255,0,0,255"><br>
+    
+    <br><center><button class="nextBtn">Next</button></center>
+</div>
+<div id="darkModeDiv">
+    <center><button class="backBtn">Back</button></center>
+    <center><b>Dark mode</b></center><br>
+    
+    Logo color: <input id="darkLogoColInp" placeholder="255,0,0,255"><br>
+    Text color: <input id="darkTextColInp" placeholder="255,0,0,255"><br>
+    Background color: <input id="darkBgColInp" placeholder="255,0,0,255"><br>
+    <br>
+    Front wave color: <input id="darkFrontWaveColInp" placeholder="255,0,0,255"><br>
+    Middle wave color: <input id="darkMiddleWaveColInp" placeholder="255,0,0,255"><br>
+    Back wave color: <input id="darkBackWaveColInp" placeholder="255,0,0,255"><br>
+    <br>
+    Selection color #1: <input id="darkSelectCol1Inp" placeholder="255,0,0,255"><br>
+    Selection color #2: <input id="darkSelectCol2Inp" placeholder="255,0,0,255"><br>
+    <br>
+    App/icon background color: <input id="darkAppIconBgColInp" placeholder="255,0,0,255"><br>
+    App/icon text color: <input id="darkAppIconTextColInp" placeholder="255,0,0,255"><br>
+    <br>
+    Blend wave colors?: <input id="darkBlendWavesBoolInp" placeholder="0"><br>
+    <br>
+    Separator color: <input id="darkSeparatorColInp" placeholder="255,0,0,255"><br>
+    Progress bar color: <input id="darkProgressBarColInp" placeholder="255,0,0,255"><br>
+    
+    <br><center><button class="nextBtn">Next</button></center>
+</div>
+<div id="exportMenuDiv">
+    <center><button class="backBtn">Back</button></center>
+    <center><b>Export theme</b></center><br>
+
+    *File name: <input id="exportFileNameInp" placeholder="customTheme"><br>
+
+    <br>
+    <center>
+        <button class="restartBtn" id="exportThemeBtn">Export .cfg</button>
+    </center>
+</div>
+
+<script src="./cfgParse.js"></script>
+<script src="./genCfg.js"></script>
+<script>
+    async function openTheme () {
+        let [handle] = await showOpenFilePicker({
+            multiple: false,
+            excludeAcceptAllOption: true,
+            //startIn: "",
+            types: [{
+                accept: {
+                    "*/*": [".cfg"]
+                },
+                description: ":"
+            }]
+        })
+        let file = await handle.getFile()
+        let text = await file.text()
+        let obj = parseCfgFile(text)
+        applyCfgObj(obj)
+    }; openThemeBtn.onclick = openTheme
+
+    function pageGetShownIndex () {
+        let divs = document.querySelectorAll("div")
+        let shownIndex = [...divs].findIndex(div => div.className == "shown")
+        return {divs, shownIndex}
+    }
+    function pageBack () {
+        let {divs, shownIndex} = pageGetShownIndex()
+        divs[shownIndex].className = ""
+        divs[shownIndex - 1].className = "shown"
+    }
+    function pageNext () {
+        let {divs, shownIndex} = pageGetShownIndex()
+        divs[shownIndex].className = ""
+        divs[shownIndex + 1].className = "shown"
+    }
+    function pageRestart () {
+        let {divs, shownIndex} = pageGetShownIndex()
+        divs[shownIndex].className = ""
+        divs[0].className = "shown"
+    }
+    for (let btn of document.querySelectorAll("button.backBtn")) btn.addEventListener("click", pageBack)
+    for (let btn of document.querySelectorAll("button.nextBtn")) btn.addEventListener("click", pageNext)
+    for (let btn of document.querySelectorAll("button.restartBtn")) btn.addEventListener("click", pageRestart)
+</script>
