@@ -1,6 +1,7 @@
 async function exportTheme () {
     let text = generateThemeCfg()
     let name = exportFileNameInp.value
+    if (name == "") name = "customTheme"
 
     let handle = await showSaveFilePicker({
         suggestedName: name + ".cfg",
