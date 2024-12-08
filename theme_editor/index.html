@@ -129,6 +129,11 @@
         })
         let file = await handle.getFile()
         let text = await file.text()
+
+        let name = file.name
+        name = name.substring(0, name.lastIndexOf(".cfg"))
+        exportFileNameInp.value = name
+
         let obj = parseCfgFile(text)
         applyCfgObj(obj)
     }; openThemeBtn.onclick = openTheme
