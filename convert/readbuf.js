@@ -18,9 +18,7 @@ function getNum (data, pos, size, mode) {
     return num
 }
 function getByte (data, pos) {
-    let buf = getBuf(data, pos, 1)
-    let arr = new Uint8Array(buf)
-    let byte = arr[0]
+    let byte = getNum(data, pos, 1)
     return byte
 }
 function byteGetNibble (byte, pos) {
