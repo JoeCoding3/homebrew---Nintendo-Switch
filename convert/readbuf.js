@@ -18,7 +18,7 @@ function getNum (data, pos, size, mode) {
     return num
 }
 function getByte (data, pos) {
-    let byte = getNum(data, pos, 1)
+    let byte = getNum(data, pos, 1, "BE")
     return byte
 }
 function byteGetNibble (byte, pos) {
