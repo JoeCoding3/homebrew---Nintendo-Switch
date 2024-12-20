@@ -50,8 +50,10 @@
             hashKeyTable = getNode(data, header_hashKeyTableOffset, header_version, numMode)
             stringTable = getNode(data, header_stringTableOffset, header_version, numMode)
             let rootNode = getNode(data, header_rootNodeOffset, header_version, numMode)
+                let rootNodeType = getByte(data, header_rootNodeOffset)
+                let rootNodeContainerType = getContainerNode(rootNodeType, header_version)
         
-        fileStructure = {}
+        fileStructure = rootNodeContainerType
         traverseNodes(data, rootNode, [], header_version, numMode)
             let json = JSON.stringify(fileStructure, null, 4) + "\n"
         return json
@@ -71,7 +73,8 @@
             let valueValue = getValueNode(type, value, version)
             let containerValue = getContainerNode(type, version)
             let convertValue = valueValue
-            let hashKeyIndex = node?.hashKeyIndex
+            let hashKeyIndex = node.hashKeyIndex
+            let hashKey = hashKeyTable[hashKeyIndex]
             if (convertValue == null) convertValue = containerValue
             
             let nextOutArr = outArr
@@ -79,7 +82,6 @@
                 out.push(containerValue)
                 if (containerValue != null) nextOutArr.push(out.length - 1)
             } else {
-                let hashKey = hashKeyTable[hashKeyIndex]
                 out[hashKey] = convertValue
                 if (containerValue != null) nextOutArr.push(hashKey)
             }
