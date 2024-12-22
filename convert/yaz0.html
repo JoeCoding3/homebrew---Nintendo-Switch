@@ -1,79 +1,11 @@
 <!doctype html>
 <title>Yaz0 (.szs) to BIN (.bin)</title>
-<style>
-    * {
-        outline: none;
-        user-select: none;
-    }
-    body, ::selection {
-        background-color: black;
-        color: lightgray;
-    }
-
-    button {
-        background-color: lightgray;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-</style>
+<link rel="stylesheet" href="./libs/style.css">
 
 <button id="openBtn" autofocus>Yaz0 (.szs) to BIN (.bin)</button>
 
 <script src="./libs/readbuf.js"></script>
 <script src="./libs/files.js"></script>
-<!--<script src="./libs/external/jszip.min.js"></script>-->
-<script>
-    openBtn.onclick = async function () {
-        let file = await importFile("szs")
-        let result = decompressFromYaz0(file.buf)
-        await exportFile(result, file.name, "bin")
-    }
-
-    function decompressFromYaz0 (data) {
-        let header = getBuf(data, 0, 16)
-            let header_name = getStr(header, 0, 4)
-                expectVal(header_name, "Yaz0", "Invalid file", "Yaz0 header does not start with 'Yaz0'")
-            let header_outSize = getNum(header, 4, 4, "BE")
-            let header_unused = getNum(header, 8, 8, "BE")
-        let src = getBuf(data, 16, data.byteLength - 16)
-            let out = new Uint8Array(header_outSize)
-            let srcPos = outPos = 0
-            while (outPos < header_outSize) {
-                let code = getByte(src, srcPos)
-                    srcPos++
-                for (let i = 0; i < 8; i++) {
-                    let bit = byteGetBit(code, i)
-                    if (bit == 1) {
-                        let copy = getByte(src, srcPos)
-                            srcPos++
-                        out[outPos] = copy
-                            outPos++
-                    } else if (bit == 0) {
-                        let byte1 = getByte(src, srcPos)
-                            srcPos++
-                            let a = byteGetNibble(byte1, 0)
-                            let b = byteGetNibble(byte1, 1)
-                        let byte2 = getByte(src, srcPos)
-                            srcPos++
-                        
-                        let count = a
-                            if (count == 0) {
-                                let byte3 = getByte(src, srcPos)
-                                    srcPos++
-                                count = byte3 + 0b00010010
-                            } else count += 2
-                        let moveDist = ((b << 8) | byte2) + 1
-
-                        let copyPos = outPos - moveDist
-                        for (let i = 0; i < count; i++) {
-                            let copy = getByte(out, copyPos)
-                                copyPos++
-                            out[outPos] = copy
-                                outPos++
-                        }
-                    }
-                }
-            }
-        return out.buffer
-    }
-</script>
+<script src="./libs/external/jszip.min.js"></script>
+<script src="./yaz0.js"></script>
+<script>openBtn.onclick = decompressFileFromYaz0</script>
