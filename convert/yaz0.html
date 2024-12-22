@@ -19,9 +19,9 @@
 
 <button id="openBtn" autofocus>Yaz0 (.szs) to BIN (.bin)</button>
 
-<script src="./readbuf.js"></script>
-<script src="./files.js"></script>
-<!--<script src="./libs/jszip.min.js"></script>-->
+<script src="./libs/readbuf.js"></script>
+<script src="./libs/files.js"></script>
+<!--<script src="./libs/external/jszip.min.js"></script>-->
 <script>
     openBtn.onclick = async function () {
         let file = await importFile("szs")
