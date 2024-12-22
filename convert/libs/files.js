@@ -1,11 +1,14 @@
 async function importFile (ext) {
+    if (typeof ext == "string") ext = [ext]
+    for (let index in ext) ext[index] = `.${ext[index]}`
+
     let [handle] = await showOpenFilePicker({
         multiple: false,
         excludeAcceptAllOption: false,
         startIn: "downloads",
         types: [{
             accept: {
-                "*/*": [`.${ext}`]
+                "*/*": ext
             },
             description: ":"
         }]
