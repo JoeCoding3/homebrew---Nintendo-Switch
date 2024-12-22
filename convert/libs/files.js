@@ -1,6 +1,6 @@
-async function importFile (ext) {
-    if (typeof ext == "string") ext = [ext]
-    for (let index in ext) ext[index] = `.${ext[index]}`
+async function importFile (exts) {
+    if (typeof exts == "string") exts = [exts]
+    for (let index in exts) exts[index] = `.${exts[index]}`
 
     let [handle] = await showOpenFilePicker({
         multiple: false,
@@ -8,7 +8,7 @@ async function importFile (ext) {
         startIn: "downloads",
         types: [{
             accept: {
-                "*/*": ext
+                "*/*": exts
             },
             description: ":"
         }]
@@ -16,8 +16,9 @@ async function importFile (ext) {
     let file = await handle.getFile()
     let buf = await file.arrayBuffer()
     let name = file.name
-        name = name.substring(0, name.lastIndexOf(`.${ext}`))
-    return {buf, name}
+        let ext = name.substring(name.lastIndexOf(".") + 1)
+        name = name.substring(0, name.lastIndexOf("."))
+    return {buf, name, ext}
 }
 
 async function exportFile (buf, name, ext) {
