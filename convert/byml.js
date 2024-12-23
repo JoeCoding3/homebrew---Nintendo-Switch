@@ -214,7 +214,37 @@ function getValueNode (type, value, version) {
         } else if (type == 0xD1) {
             return value
         } else if (type == 0xD2) {
-            return value
+            let hex = value.toString(16)
+            let b1 = hex.substring(0, 2)
+            let b2 = hex.substring(2, 4)
+            let b3 = hex.substring(4, 6)
+            let b4 = hex.substring(6, 8)
+            let bin = [b1, b2, b3, b4].map(val => parseInt(val, 16).toString(2).padStart(8, "0")).join("")
+
+            let binSign = bin.substring(0, 1)
+                let resultSign = (-1) ** parseInt(binSign, 2)
+            let binExponent = bin.substring(1, 9)
+                let exponent = 0
+                let indexExp = 0
+                for (let i = binExponent.length - 1; i >= 0; i--) {
+                    let char = binExponent[indexExp]
+                    if (char == "1") exponent += 2 ** i
+                    indexExp++
+                }
+                let bias = (2 ** (binExponent.length - 1)) - 1
+                let resultExponent = 2 ** (exponent - bias)
+            let binFraction = bin.substring(9, 32)
+                let fraction = 0
+                let indexFrac = 0
+                for (let i = -1; i >= -binFraction.length; i--) {
+                    let char = binFraction[indexFrac]
+                    if (char == "1") fraction += 2 ** i
+                    indexFrac++
+                }
+                let resultFraction = (2 ** 0) + fraction
+            
+            let result = resultSign * resultExponent * resultFraction
+            return result
         } else if (type == 0xD3) {
             return value
         }
