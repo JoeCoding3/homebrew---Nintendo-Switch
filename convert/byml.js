@@ -1,7 +1,12 @@
+let result = null
+let resultName = null
 async function decompressFileFromBYML () {
     let file = await importFile("byml")
-    let result = decompressFromBYML(file.buf)
-    await exportFile(result, file.name, "json")
+    result = decompressFromBYML(file.buf)
+    resultName = file.name
+}
+async function downloadResult () {
+    await exportFile(result, resultName, "json")
 }
 let hashKeyTable = null
 let stringTable = null
