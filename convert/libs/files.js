@@ -39,10 +39,16 @@ async function exportFile (buf, name, ext) {
 }
 async function exportZip (obj, name) {
     let zip = new JSZip()
-    for (let key of Object.keys(obj)) {
-        let content = obj[key]
-        zip.file(key, content)
-    }
+    exportZip_parseObj(zip, obj)
     let data = await zip.generateAsync({type: "blob"})
     await exportFile(data, name, "zip")
+}
+function exportZip_parseObj (zip, obj) {
+    for (let key of Object.keys(obj)) {
+        let content = obj[key]
+        if (typeof content.resize != "function") {
+            let folder = zip.folder(key)
+            exportZip_parseObj(folder, content)
+        } else zip.file(key, content)
+    }
 }
