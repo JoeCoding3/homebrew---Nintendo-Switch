@@ -1,12 +1,13 @@
-let result = null
-let resultName = null
+let resultSARC = null
+let resultNameSARC = null
+let outFileTypeSARC = "zip"
 async function decompressFileFromSARC () {
     let file = await importFile("sarc")
-    result = decompressFromSARC(file.buf)
-    resultName = file.name
+    resultSARC = decompressFromSARC(file.buf)
+    resultNameSARC = file.name
 }
 async function downloadResult () {
-    await exportZip(result, resultName)
+    await exportZip(resultSARC, resultNameSARC)
 }
 function decompressFromSARC (data) {
     let numMode = null

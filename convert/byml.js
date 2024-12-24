@@ -1,12 +1,13 @@
-let result = null
-let resultName = null
+let resultBYML = null
+let resultNameBYML = null
+let outFileTypeBYML = "json"
 async function decompressFileFromBYML () {
     let file = await importFile("byml")
-    result = decompressFromBYML(file.buf)
-    resultName = file.name
+    resultBYML = decompressFromBYML(file.buf)
+    resultNameBYML = file.name
 }
 async function downloadResult () {
-    await exportFile(result, resultName, "json")
+    await exportFile(resultBYML, resultNameBYML, outFileTypeBYML)
 }
 let hashKeyTable = null
 let stringTable = null
@@ -26,16 +27,18 @@ function decompressFromBYML (data) {
         let header_stringTableOffset = getNum(header, 8, 4, numMode)
         let header_rootNodeOffset = getNum(header, 12, 4, numMode)
     let src = getBuf(data, 16, data.byteLength - 16)
-        hashKeyTable = getNode(data, header_hashKeyTableOffset, header_version, numMode)
-        stringTable = getNode(data, header_stringTableOffset, header_version, numMode)
-        let rootNode = getNode(data, header_rootNodeOffset, header_version, numMode)
+        hashKeyTable = getNode(data, header_hashKeyTableOffset, header_version, numMode, true)
+        stringTable = getNode(data, header_stringTableOffset, header_version, numMode, true)
+        let rootNode = getNode(data, header_rootNodeOffset, header_version, numMode, true)
             let rootNodeType = getByte(data, header_rootNodeOffset)
-            let rootNodeContainerType = getContainerNode(rootNodeType, header_version)
+            let rootNodeContainerType = {}
+            if (rootNode != null) rootNodeContainerType = getContainerNode(rootNodeType, header_version)
     
     fileStructure = rootNodeContainerType
-    traverseNodes(data, rootNode, [], header_version, numMode)
+    if (rootNode != null) traverseNodes(data, rootNode, [], header_version, numMode)
         let json = JSON.stringify(fileStructure, null, 4) + "\n"
-    return json
+        let jsonBuf = new TextEncoder().encode(json).buffer
+    return jsonBuf
 }
 let fileStructure = null
 function traverseNodes (data, nodes, outArr, version, numMode) {
@@ -81,7 +84,9 @@ function d2h (dec) {
 function h2d (hex) {
     return parseInt(hex, 16)
 }
-function getNode (data, offset, version, numMode) {
+function getNode (data, offset, version, numMode, zeroEmpty = false) {
+    if (zeroEmpty && offset == 0) return null
+
     let type = getByte(data, offset)
     let buf = getBuf(data, offset, data.byteLength - offset)
     if (version >= 2) {

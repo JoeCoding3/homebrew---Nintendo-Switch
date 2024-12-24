@@ -1,12 +1,13 @@
-let result = null
-let resultName = null
+let resultYaz0 = null
+let resultNameYaz0 = null
+let outFileTypeYaz0 = "sarc"
 async function decompressFileFromYaz0 () {
     let file = await importFile("szs")
-    result = decompressFromYaz0(file.buf)
-    resultName = file.name
+    resultYaz0 = decompressFromYaz0(file.buf)
+    resultNameYaz0 = file.name
 }
 async function downloadResult () {
-    await exportFile(result, resultName, "bin")
+    await exportFile(resultYaz0, resultNameYaz0, outFileTypeYaz0)
 }
 function decompressFromYaz0 (data) {
     let header = getBuf(data, 0, 16)
