@@ -94,11 +94,12 @@
         let funcIndex = fileTypeMappings.findIndex(val => type.startsWith(val))
 
         let li = document.createElement("li")
-        li.innerHTML = `<b>[${type}]</b> ${name}.${ext}`
-        li.dataset.dataIndex = dataIndex
-        li.dataset.funcIndex = funcIndex
-        li.dataset.running = "0"
-        li.onclick = function () {
+        let span = document.createElement("span")
+        span.innerHTML = `<b>[${type}]</b> ${name}.${ext}`
+        span.dataset.dataIndex = dataIndex
+        span.dataset.funcIndex = funcIndex
+        span.dataset.running = "0"
+        span.onclick = function () {
             if (this.dataset.running == "1") return
             this.dataset.running = "1"
             this.style.cursor = "wait"
@@ -123,13 +124,13 @@
                         let ext = name[1]
                         name = name[0]
 
-                    let list = addList(this)
+                    let list = addList(this.parentElement)
                     addFile(list, result, `<i>${name}</i>`, resultExt, fileTableAddIndex)
                     fileDataTable[fileTableAddIndex] = result
                     fileNameTable[fileTableAddIndex] = `${name}.${resultExt}`
                     fileTableAddIndex++
                 } else {
-                    let list = addList(this)
+                    let list = addList(this.parentElement)
                     addObj(list, result)
                 }
             }
@@ -138,6 +139,15 @@
             this.style.cursor = "default"
             this.dataset.running = "0"
         }
+        span.oncontextmenu = function () {
+            let dataIndex = +this.dataset.dataIndex
+            let data = fileDataTable[dataIndex]
+            let name = fileNameTable[dataIndex].split(".")
+                let ext = name[1]
+                name = name[0]
+            exportFile(data, name, ext)
+        }
+        li.append(span)
         ul.append(li)
     }
     function addObj (list, obj) {
