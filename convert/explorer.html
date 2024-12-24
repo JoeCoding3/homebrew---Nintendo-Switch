@@ -139,7 +139,7 @@
             this.style.cursor = "default"
             this.dataset.running = "0"
         }
-        span.oncontextmenu = function () {
+        span.oncontextmenu = function (ev) {
             let dataIndex = +this.dataset.dataIndex
             let data = fileDataTable[dataIndex]
             let name = fileNameTable[dataIndex].split(".")
