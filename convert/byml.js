@@ -9,12 +9,13 @@ async function decompressFileFromBYML () {
 async function downloadResult () {
     await exportFile(resultBYML, resultNameBYML, outFileTypeBYML)
 }
-let hashKeyTable = null
-let stringTable = null
+let byml_hashKeyTable = null
+let byml_stringTable = null
+let byml_fileStructure = null
 function decompressFromBYML (data) {
-    hashKeyTable = null
-    stringTable = null
-    fileStructure = null
+    byml_hashKeyTable = null
+    byml_stringTable = null
+    byml_fileStructure = null
 
     let numMode = null
     let header = getBuf(data, 0, 16)
@@ -27,23 +28,22 @@ function decompressFromBYML (data) {
         let header_stringTableOffset = getNum(header, 8, 4, numMode)
         let header_rootNodeOffset = getNum(header, 12, 4, numMode)
     let src = getBuf(data, 16, data.byteLength - 16)
-        hashKeyTable = getNode(data, header_hashKeyTableOffset, header_version, numMode, true)
-        stringTable = getNode(data, header_stringTableOffset, header_version, numMode, true)
-        let rootNode = getNode(data, header_rootNodeOffset, header_version, numMode, true)
+        byml_hashKeyTable = byml_getNode(data, header_hashKeyTableOffset, header_version, numMode, true)
+        byml_stringTable = byml_getNode(data, header_stringTableOffset, header_version, numMode, true)
+        let rootNode = byml_getNode(data, header_rootNodeOffset, header_version, numMode, true)
             let rootNodeType = getByte(data, header_rootNodeOffset)
             let rootNodeContainerType = {}
-            if (rootNode != null) rootNodeContainerType = getContainerNode(rootNodeType, header_version)
+            if (rootNode != null) rootNodeContainerType = byml_getContainerNode(rootNodeType, header_version)
     
-    fileStructure = rootNodeContainerType
-    if (rootNode != null) traverseNodes(data, rootNode, [], header_version, numMode)
-        let json = JSON.stringify(fileStructure, null, 4) + "\n"
+    byml_fileStructure = rootNodeContainerType
+    if (rootNode != null) byml_traverseNodes(data, rootNode, [], header_version, numMode)
+        let json = JSON.stringify(byml_fileStructure, null, 4) + "\n"
         let jsonBuf = new TextEncoder().encode(json).buffer
     return jsonBuf
 }
-let fileStructure = null
-function traverseNodes (data, nodes, outArr, version, numMode) {
+function byml_traverseNodes (data, nodes, outArr, version, numMode) {
     let structure = []
-    let out = fileStructure
+    let out = byml_fileStructure
     for (let outPart of outArr) {
         structure.push(out)
         out = out[outPart]
@@ -52,11 +52,11 @@ function traverseNodes (data, nodes, outArr, version, numMode) {
     for (let node of nodes) {
         let type = node.type
         let value = node.value
-        let valueValue = getValueNode(type, value, version)
-        let containerValue = getContainerNode(type, version)
+        let valueValue = byml_getValueNode(type, value, version)
+        let containerValue = byml_getContainerNode(type, version)
         let convertValue = valueValue
         let hashKeyIndex = node.hashKeyIndex
-        let hashKey = hashKeyTable[hashKeyIndex]
+        let hashKey = byml_hashKeyTable[hashKeyIndex]
         if (convertValue == null) convertValue = containerValue
         
         let nextOutArr = outArr
@@ -69,22 +69,13 @@ function traverseNodes (data, nodes, outArr, version, numMode) {
         }
 
         if (valueValue == null) {
-            let outNodes = getNode(data, value, version, numMode)
-            traverseNodes(data, outNodes, nextOutArr, version, numMode)
+            let outNodes = byml_getNode(data, value, version, numMode)
+            byml_traverseNodes(data, outNodes, nextOutArr, version, numMode)
             nextOutArr.splice(nextOutArr.length - 1, 1)
         }
     }
 }
-function ceil4 (val) {
-    return Math.ceil(val / 4) * 4
-}
-function d2h (dec) {
-    return dec.toString(16).toUpperCase()
-}
-function h2d (hex) {
-    return parseInt(hex, 16)
-}
-function getNode (data, offset, version, numMode, zeroEmpty = false) {
+function byml_getNode (data, offset, version, numMode, zeroEmpty = false) {
     if (zeroEmpty && offset == 0) return null
 
     let type = getByte(data, offset)
@@ -98,7 +89,7 @@ function getNode (data, offset, version, numMode, zeroEmpty = false) {
             let nodes = []
             let typesBuf = getBuf(buf, 4, numEntries)
                 let types = [...new Uint8Array(typesBuf)]
-            let valuesBuf = getBuf(buf, 4 + ceil4(numEntries), 4 * numEntries)
+            let valuesBuf = getBuf(buf, 4 + (Math.ceil(numEntries / 4) * 4), 4 * numEntries)
                 for (let i = 0; i < numEntries; i++) {
                     let type = types[i]
                     let value = getNum(valuesBuf, i * 4, 4, numMode)
@@ -155,9 +146,9 @@ function getNode (data, offset, version, numMode, zeroEmpty = false) {
         }*/
     }
 
-    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${d2h(type)} (${type}). File offset: 0x${d2h(offset)} (${offset})`)
+    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). File offset: 0x${offset.toString(16).toUpperCase()} (${offset})`)
 }
-function getContainerNode (type, version) {
+function byml_getContainerNode (type, version) {
     if (version >= 2) {
         if (type == 0xA0) {
             return null
@@ -202,12 +193,12 @@ function getContainerNode (type, version) {
         }*/
     }
     
-    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${d2h(type)} (${type}). Function: Parse container node`)
+    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse container node`)
 }
-function getValueNode (type, value, version) {
+function byml_getValueNode (type, value, version) {
     if (version >= 2) {
         if (type == 0xA0) {
-            return stringTable[value]
+            return byml_stringTable[value]
         } else if (type == 0xC0) {
             return null
         } else if (type == 0xC1) {
@@ -282,5 +273,5 @@ function getValueNode (type, value, version) {
         }*/
     }
     
-    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${d2h(type)} (${type}). Function: Parse value node`)
+    expectVal(0, 1, "Error reading file", `Unknown node type: 0x${type.toString(16).toUpperCase()} (${type}). Function: Parse value node`)
 }

@@ -52,3 +52,51 @@ function exportZip_parseObj (zip, obj) {
         } else zip.file(key, content)
     }
 }
+
+function getFileType (data) {
+    let name = null
+    let ext = null
+
+    if (getStr(data, 0, 4) == "Yaz0") {
+        name = `Yaz0`
+        ext = "szs"
+    }
+    
+    else if (getStr(data, 0, 4) == "SARC") {
+        let mode = null
+        let byteOrder = getNum(data, 6, 2, "BE")
+            byteOrder = byteOrder.toString(16)
+            if (byteOrder == "feff") mode = "BE"
+            else if (byteOrder == "fffe") mode = "LE"
+            name = `SARC_${mode}`
+            ext = "sarc"
+    }
+
+    else if (getStr(data, 0, 4) == "RARC") {
+        let mode = "BE"
+        name = `RARC_${mode}`
+        ext = "rarc"
+    } else if (getStr(data, 0, 4) == "CRAR") {
+        let mode = "LE"
+        name = `RARC_${mode}`
+        ext = "rarc"
+    }
+    
+    else if (getStr(data, 0, 2) == "BY") {
+        let mode = "BE"
+        let ver = getNum(data, 2, 2, mode)
+        name = `BYML_${mode}_V${ver}`
+        ext = "byml"
+    } else if (getStr(data, 0, 2) == "YB") {
+        let mode = "LE"
+        let ver = getNum(data, 2, 2, mode)
+        name = `BYML_${mode}_V${ver}`
+        ext = "byml"
+    }
+    
+    else {
+        name = "?"
+        ext = "bin"
+    }
+    return {name, ext}
+}

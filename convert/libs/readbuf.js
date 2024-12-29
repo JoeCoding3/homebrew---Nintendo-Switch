@@ -2,9 +2,11 @@ function getBuf (data, pos, size) {
     let buf = data.slice(pos, pos + size)
     return buf
 }
-function getStr (data, pos, size) {
+function getStr (data, pos, size, mode = "BE") {
     let buf = getBuf(data, pos, size)
     let str = new TextDecoder().decode(buf)
+    if (mode == "BE") null
+    else if (mode == "LE") str = str.split("").reverse().join("")
     return str
 }
 function getNum (data, pos, size, mode) {
