@@ -2,7 +2,7 @@ let resultRARC = null
 let resultNameRARC = null
 let outFileTypeRARC = "zip"
 async function decompressFileFromRARC () {
-    let file = await importFile("rarc")
+    let file = await importFile(["rarc"])
     resultRARC = decompressFromRARC(file.buf)
     resultNameRARC = file.name
 }

@@ -2,7 +2,7 @@ let resultYaz0 = null
 let resultNameYaz0 = null
 let outFileTypeYaz0 = "bin"
 async function decompressFileFromYaz0 () {
-    let file = await importFile("szs")
+    let file = await importFile(["szs", "arc"])
     resultYaz0 = decompressFromYaz0(file.buf)
     resultNameYaz0 = file.name
 }
