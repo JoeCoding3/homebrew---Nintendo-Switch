@@ -1,0 +1,8 @@
+create .bcsv to .csv converter:
+    docs: https://www.lumasworkshop.com/wiki/BCSV_(File_format)
+create .bfres to .zip converter:
+    docs:
+        https://mk8.tockdom.com/wiki/BFRES_(File_Format)
+        https://nintendo-formats.com/libs/nw/bfres.html
+    also create converters for files inside of .bfres - .bf***:
+        docs: ???
