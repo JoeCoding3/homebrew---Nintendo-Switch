@@ -3,7 +3,6 @@
 <link rel="stylesheet" href="./libs/style.css">
 <style>
     li {
-        cursor: pointer;
         list-style: square;
     }
 </style>
@@ -72,7 +71,7 @@
 
         let li = document.createElement("li")
         let span = document.createElement("span")
-        span.innerHTML = `<b>[${type}]</b> ${name}.${ext}`
+        span.innerHTML = `<b>[${type}]</b> ${name}${ext != undefined ? `.${ext}` : ``}`
         span.dataset.dataIndex = dataIndex
         span.dataset.funcIndex = funcIndex
         span.dataset.running = "0"
@@ -125,12 +124,23 @@
             exportFile(data, name, ext)
         }
         li.append(span)
+        li.style.cursor = "default"
+        span.style.cursor = "pointer"
+        ul.append(li)
+    }
+    function addFolder (ul, name) {
+        let li = document.createElement("li")
+        let span = document.createElement("span")
+        span.innerHTML = `<b>[FOLDER]</b> ${name}`
+        li.append(span)
+        li.style.cursor = "default"
         ul.append(li)
     }
     function addObj (list, obj) {
         for (let key of Object.keys(obj)) {
             let content = obj[key]
-            if (typeof content.resize != "function") {
+            if (typeof content.resize != "function") { // NOT ArrayBuffer
+                addFolder(list, key)
                 let folder = addList(list)
                 addObj(folder, content)
             } else {

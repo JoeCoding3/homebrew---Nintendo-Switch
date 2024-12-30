@@ -10,11 +10,13 @@ async function downloadResult () {
     await exportZip(resultRARC, resultNameRARC)
 }
 let rarc_stringTable = null
+let rarc_nodeTable = null
 let rarc_directoryTable = null
 let rarc_fileDataStart = null
 let rarc_fileStructure = null
 function decompressFromRARC (data) {
     rarc_stringTable = null
+    rarc_nodeTable = null
     rarc_directoryTable = null
     rarc_fileDataStart = null
     rarc_fileStructure = null
@@ -44,6 +46,12 @@ function decompressFromRARC (data) {
         let info_unused = getNum(info, 0x1A, 6, numMode)
     rarc_stringTable = getBuf(data, info_stringTableOffset + 0x20, info_stringTableLength)
         rarc_fileDataStart = info_stringTableOffset + info_stringTableLength + 0x20
+    let nodeTableBuf = getBuf(data, info_firstNodeOffset + 0x20, info_nodeCount * 0x10)
+        rarc_nodeTable = new Array(info_nodeCount)
+        for (let i = 0; i < info_nodeCount; i++) {
+            let nodeBuf = getBuf(nodeTableBuf, i * 0x10, 0x10)
+            rarc_nodeTable[i] = nodeBuf
+        }
     let directoryTableBuf = getBuf(data, info_firstDirectoryOffset + 0x20, info_directoryCount * 0x14)
         rarc_directoryTable = new Array(info_directoryCount)
         for (let i = 0; i < info_directoryCount; i++) {
@@ -51,11 +59,11 @@ function decompressFromRARC (data) {
             rarc_directoryTable[i] = directoryBuf
         }
     rarc_fileStructure = {}
-        rarc_getNode(data, numMode, info_firstNodeOffset + 0x20, rarc_fileStructure)
+        rarc_getNode(data, numMode, 0, rarc_fileStructure)
     return rarc_fileStructure
 }
-function rarc_getNode (data, numMode, offset, structure) {
-    let node = getBuf(data, offset, 0x10)
+function rarc_getNode (data, numMode, index, structure) {
+    let node = rarc_nodeTable[index]//getBuf(data, offset, 0x10)
         let id = getStr(node, 0x00, 4, numMode)
         let stringOffset = getNum(node, 0x04, 4, numMode)
             let string = getStr(rarc_stringTable, stringOffset, rarc_stringTable.byteLength - stringOffset)
@@ -73,11 +81,7 @@ function rarc_getNode (data, numMode, offset, structure) {
         let structure2 = structure[string]
         for (let directory of directories) {
             if (directory.isFolder) {
-                if (directory.offsetOrIndex != 0xFFFFFFFF && (directory.string != "." && directory.string != "..")) {
-                    structure2[directory.string] = {}
-                    let nextNodeOffset = (directory.offsetOrIndex * 0x10) + 0x20
-                    rarc_getNode(data, numMode, nextNodeOffset, structure2[directory.string])
-                }
+                if (directory.offsetOrIndex != 0xFFFFFFFF && (directory.string != "." && directory.string != "..")) rarc_getNode(data, numMode, directory.offsetOrIndex, structure2)
             } else {
                 let fileDataBuf = getBuf(data, directory.offsetOrIndex + rarc_fileDataStart, directory.fileDataLength)
                 structure2[directory.string] = fileDataBuf
